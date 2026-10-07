@@ -1,24 +1,115 @@
-import { forwardRef } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react';
 
-/** Imperative API the parent uses to refresh the list (see App.tsx) — part of the contract. */
+import { Expense } from '../models/expense.model';
+import { expenseApi } from '../services/expense-api.service';
+
 export interface ExpenseListHandle {
   reload: () => void;
 }
 
-/**
- * Shows the expense table, the running total, and a category filter.
- *
- * TODO:
- *  - load expenses + summary on mount (implement reload())
- *  - keep `expenses`, `total`, and `error` in state
- *  - expose `reload` to the parent via useImperativeHandle (see App.tsx) —
- *    it is called after a new expense is added
- *
- * The E2E test looks for:
- *   - a table with one row per expense (use data-cy="expense-row")
- *   - the running total in an element with data-cy="total"
- */
-export const ExpenseList = forwardRef<ExpenseListHandle>(function ExpenseList(_props, _ref) {
-  // TODO: implement state + reload(), and wire the ref handle.
-  return <p>TODO: implement the expense list.</p>;
-});
+export const ExpenseList = forwardRef<ExpenseListHandle>(
+  function ExpenseList(_props, ref) {
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [total, setTotal] = useState<number>(0);
+    const [categoryFilter, setCategoryFilter] = useState('');
+    const [error, setError] = useState('');
+
+    const reload = useCallback(async () => {
+      try {
+        setError('');
+
+        const [expenseData, summaryData] = await Promise.all([
+          expenseApi.getExpenses(),
+          expenseApi.getSummary(),
+        ]);
+
+        setExpenses(expenseData);
+        setTotal(summaryData.total);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to load expenses'
+        );
+      }
+    }, []);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        reload,
+      }),
+      [reload]
+    );
+
+    useEffect(() => {
+      reload();
+    }, [reload]);
+
+    const filteredExpenses = useMemo(() => {
+      const filter = categoryFilter.trim().toLowerCase();
+
+      if (!filter) {
+        return expenses;
+      }
+
+      return expenses.filter(
+        (expense) => expense.category.toLowerCase() === filter
+      );
+    }, [expenses, categoryFilter]);
+
+    return (
+      <section>
+        <h2>Expenses</h2>
+
+        <div>
+          <label htmlFor="category-filter">Filter by category: </label>
+          <input
+            id="category-filter"
+            data-cy="category-filter"
+            type="text"
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+            placeholder="e.g. Food"
+          />
+        </div>
+
+        {error && <p role="alert">{error}</p>}
+
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredExpenses.map((expense) => (
+              <tr key={expense.id} data-cy="expense-row">
+                <td>{expense.description}</td>
+                <td>{expense.category}</td>
+                <td>{Number(expense.amount).toFixed(2)}</td>
+                <td>{expense.incurredOn}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <p>
+          Total:{' '}
+          <strong data-cy="total">
+            {Number(total).toFixed(2)}
+          </strong>
+        </p>
+      </section>
+    );
+  }
+);
