@@ -1,0 +1,6 @@
+
+include:
+  - project: 'root/ci-cd-templates'
+    ref: 'main'
+    file: 'gitlab-ci-for-react-springboot.yml'
+    
