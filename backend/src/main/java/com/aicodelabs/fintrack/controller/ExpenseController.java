@@ -4,6 +4,7 @@ import com.aicodelabs.fintrack.model.Expense;
 import com.aicodelabs.fintrack.service.ExpenseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,17 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST API for expenses. Delegate everything to {@link ExpenseService}; no business logic here.
- *
- * TODO: implement each endpoint body. The CrossOrigin allows the React dev server / E2E
- * runner to call the API directly when not proxied.
- */
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseController {
@@ -78,4 +72,12 @@ public class ExpenseController {
                 Map.of("total", service.totalAmount())
         );
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity<Map<String, String>> handleBadRequest(
+        IllegalArgumentException exception) {
+
+    return ResponseEntity.badRequest()
+            .body(Map.of("error", exception.getMessage()));
+}
 }
