@@ -96,7 +96,8 @@ export const ExpenseList = forwardRef<ExpenseListHandle>(
               <tr key={expense.id} data-cy="expense-row">
                 <td>{expense.description}</td>
                 <td>{expense.category}</td>
-                <td>{Number(expense.amount).toFixed(2)}</td>
+                <td data-cy="row-amount">{Number(expense.amount).toFixed(2)}
+                  </td>                
                 <td>{expense.incurredOn}</td>
               </tr>
             ))}
