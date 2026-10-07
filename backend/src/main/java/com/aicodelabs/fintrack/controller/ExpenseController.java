@@ -3,17 +3,8 @@ package com.aicodelabs.fintrack.controller;
 import com.aicodelabs.fintrack.model.Expense;
 import com.aicodelabs.fintrack.service.ExpenseService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,54 +21,52 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ResponseEntity<Expense> create(@RequestBody Expense expense) {
-        Expense created = service.create(expense);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Expense createExpense(@RequestBody Expense expense) {
+        return service.create(expense);
     }
 
     @GetMapping
-    public ResponseEntity<List<Expense>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public List<Expense> getAllExpenses() {
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Expense> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.findById(id));
+    public Expense getExpenseById(@PathVariable Long id) {
+        return service.findById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Expense> update(
+    public Expense updateExpense(
             @PathVariable Long id,
             @RequestBody Expense expense) {
 
-        return ResponseEntity.ok(service.update(id, expense));
+        return service.update(id, expense);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteExpense(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Expense>> findByCategory(
+    public List<Expense> getExpensesByCategory(
             @PathVariable String category) {
 
-        return ResponseEntity.ok(service.findByCategory(category));
+        return service.findByCategory(category);
     }
 
     @GetMapping("/summary")
-    public ResponseEntity<Map<String, BigDecimal>> summary() {
-        return ResponseEntity.ok(
-                Map.of("total", service.totalAmount())
-        );
+    public Map<String, BigDecimal> getSummary() {
+        return Map.of("total", service.totalAmount());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-public ResponseEntity<Map<String, String>> handleBadRequest(
-        IllegalArgumentException exception) {
+    public ResponseEntity<Map<String, String>> handleBadRequest(
+            IllegalArgumentException exception) {
 
-    return ResponseEntity.badRequest()
-            .body(Map.of("error", exception.getMessage()));
-}
+        return ResponseEntity.badRequest()
+                .body(Map.of("error", exception.getMessage()));
+    }
 }
