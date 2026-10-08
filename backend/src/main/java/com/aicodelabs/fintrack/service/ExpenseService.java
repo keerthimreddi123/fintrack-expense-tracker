@@ -48,7 +48,9 @@ public class ExpenseService {
         Expense existing = findById(id);
         repository.delete(existing);
     }
-
+    public void deleteAll() {
+    repository.deleteAll();
+}
     public List<Expense> findByCategory(String category) {
         return repository.findByCategoryIgnoreCase(category);
     }

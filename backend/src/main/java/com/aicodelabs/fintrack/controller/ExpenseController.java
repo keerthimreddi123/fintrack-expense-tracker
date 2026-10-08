@@ -43,7 +43,11 @@ public class ExpenseController {
 
         return service.update(id, expense);
     }
-
+@DeleteMapping
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public void deleteAllExpenses() {
+    service.deleteAll();
+}
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteExpense(@PathVariable Long id) {
