@@ -16,8 +16,20 @@ export interface ExpenseListHandle {
 
 export const ExpenseList = forwardRef<ExpenseListHandle>(
   function ExpenseList(_props, ref) {
-    const [expenses, setExpenses] = useState<Expense[]>([]);
-    const [total, setTotal] = useState<number>(0);
+    const initialExpenses =
+  typeof window !== 'undefined'
+    ? ((window as any).__FINTRACK_INITIAL_EXPENSES__ as Expense[] | undefined) ?? []
+    : [];
+
+const initialTotal =
+  typeof window !== 'undefined'
+    ? Number((window as any).__FINTRACK_INITIAL_TOTAL__ ?? 0)
+    : 0;
+    const [expenses, setExpenses] =
+  useState<Expense[]>(initialExpenses);
+
+const [total, setTotal] =
+  useState<number>(initialTotal);
     const [categoryFilter, setCategoryFilter] = useState('');
     const [error, setError] = useState('');
 
